@@ -46,6 +46,7 @@ class JogoForca {
     this.img.setAttribute('src', 'Img/1.png');
     this.PalavraSorteada = this.SorterPalavra();
     this.ArrumarPalavraMostrada();
+    this.letrasUsadas = [];
     this.btnChute.removeAttribute('disabled');
 
     const panel = document.getElementById('pnlJogoId');
