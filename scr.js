@@ -1,15 +1,18 @@
+import { ViewJs } from "./View.js";
+
 class JogoForca {
     inputChute = document.getElementById('input-chute');
     btnChute = document.getElementById('btn-chute'); 
     btnResetar = document.getElementById('btnResetar');
     palavraMostrada = document.querySelector('.palavraMostrada');
-    img = document.getElementById('img-id');
 
-    letrasUsadas = [''];
+    letrasUsadas = [];
     mensagem = '';
     NumeroTentativas = 5;
     TentativaAtual = 0;
     PalavraSorteada = '';
+    view;
+
     ListaPalavras = [
         "ABACATE", "ABACAXI", "ACEROLA", "AÇAÍ", "ARAÇA", "ABACATE", "BACABA",
         "BACURI", "BANANA", "CAJÁ", "CAJÚ", "CARAMBOLA", "CUPUAÇU", "GRAVIOLA",
@@ -19,16 +22,15 @@ class JogoForca {
       ];
 
     constructor(){
+        this.view = new ViewJs();
         this.RegistrarEventos();
         this.PalavraSorteada = this.SorterPalavra();
-        this.ArrumarPalavraMostrada();
+        this.view.ArrumarPalavraMostrada(this.PalavraSorteada);
         this.TentativaAtual = 0;
         console.log(this.PalavraSorteada);
     }
 
-    ArrumarPalavraMostrada(){
-        this.palavraMostrada.textContent = Array(this.PalavraSorteada.length).fill("_").join(" ");
-   }
+    
    
    RegistrarEventos(){
        this.inputChute.addEventListener('input',(e)=>{
@@ -43,19 +45,14 @@ class JogoForca {
 
    Resetar(){
     this.TentativaAtual = 0;
-    this.img.setAttribute('src', 'Img/1.png');
     this.PalavraSorteada = this.SorterPalavra();
-    this.ArrumarPalavraMostrada();
     this.letrasUsadas = [];
     this.btnChute.removeAttribute('disabled');
-
-    const panel = document.getElementById('pnlJogoId');
-    panel.querySelector('h2')?.remove();
-    panel.querySelector('h3')?.remove();
-
+    this.view.ResetarJogo(this.PalavraSorteada);
    }
 
    VerificarChute(){
+
     const inputChuteNormalized = this.normalizeString(this.inputChute.value.toLowerCase());
     const palavraSorteadaNormalized = this.normalizeString(this.PalavraSorteada.toLowerCase());
 
@@ -69,65 +66,29 @@ class JogoForca {
         for(let i = 0; i < this.PalavraSorteada.length; i++)
         { 
             if(this.normalizeString(this.PalavraSorteada[i].toLowerCase()) === inputChuteNormalized)
-                this.AtualizarPalavraMostrada(i, this.PalavraSorteada[i]);
+                this.view.AtualizarPalavraMostrada(i, this.PalavraSorteada[i]);
         }
     }
     else{
         this.TentativaAtual++;
 
-        if(this.TentativaAtual == 6)
-            return
-
         this.letrasUsadas.push(this.inputChute.value);
-        this.img.setAttribute('src', `Img/${this.TentativaAtual + 1}.png`);
 
-        const panel = document.getElementById('pnlJogoId');
-
-        panel.querySelector('h3')?.remove();
-
-        const txtLetrasUsadas = document.createElement('h3');
-
-        txtLetrasUsadas.textContent = this.letrasUsadas.join(" ");
-        txtLetrasUsadas.classList.add('notificacao-erro');
-
-        panel.appendChild(txtLetrasUsadas);
+        this.view.ArrumarImagem(this.TentativaAtual, this.letrasUsadas);
     }
 
     this.inputChute.value = '';
 
-    if(this.VerificarResultado()){
-
-        const panel = document.getElementById('pnlJogoId');
-
-        const txtNotificacao = document.createElement('h2');
-        txtNotificacao.textContent = this.mensagem;
-
-        if(this.mensagem == "Voce Perdeu!"){
-            txtNotificacao.classList.remove('notificacao-acerto');
-            txtNotificacao.classList.add('notificacao-erro')
-            this.btnChute.setAttribute('disabled', '');
-        }
-
-        else{
-            txtNotificacao.classList.add('notificacao-acerto');
-            txtNotificacao.classList.remove('notificacao-erro')
-        }
-
-        panel.querySelector('h2')?.remove();
-
-        panel.appendChild(txtNotificacao);
+    
+    if(this.VerificarResultado())
+    {
+        this.btnChute.setAttribute('disabled', '');
+        this.view.ArrumarTelaDependendoResultado(this.mensagem);
     }
-
 }
 
    normalizeString(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-   AtualizarPalavraMostrada(index, value){
-    let palavraArray = this.palavraMostrada.textContent.split(' ');
-    palavraArray[index] = value;
-    this.palavraMostrada.textContent = palavraArray.join(' ');
 }
 
    SorterPalavra(){
@@ -147,6 +108,8 @@ class JogoForca {
         this.mensagem = "Voce Ganhou!";
         return true;
     }
+
+    return false;
    }
 }
 
